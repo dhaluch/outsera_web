@@ -146,4 +146,4 @@ vite.config.ts.timestamp-*
 /playwright/.auth/
 
 # JetBrains IDEs
-.idea/      
+.idea/
