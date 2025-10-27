@@ -2,7 +2,7 @@ name: Playwright Tests
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master ,test-login]
   pull_request:
     branches: [ main, master ]
 
@@ -46,13 +46,6 @@ jobs:
         run: |
           npx playwright test --reporter=github --reporter=html --reporter=junit --workers=1
 
-      - name: Ensure scripts dir
-        run: mkdir -p .github/scripts
-
-      - name: Generate sanitized PDF report
-        if: always()
-        run: node .github/scripts/sanitize-and-generate-pdf.js
-
       - name: Upload Playwright HTML report
         if: always()
         uses: actions/upload-artifact@v4
@@ -60,12 +53,6 @@ jobs:
           name: playwright-report
           path: playwright-report
 
-      - name: Upload PDF report (safer to download)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report-pdf
-          path: playwright-report/report.pdf
 
       - name: Upload test-results (JUnit / logs)
         if: always()
