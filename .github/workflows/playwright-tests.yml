@@ -31,13 +31,11 @@ jobs:
         # Instala navegadores e dependências necessárias
         run: npx playwright install --with-deps
 
-      - name: Run Playwright tests (HTML + JUnit)
+      - name: Run Playwright tests (reporters via config)
         id: playwright_test
-        # Executa os testes e gera relatório HTML e JUnit (JUnit em results/junit.xml)
+        # Executa os testes; os reporters (HTML + JUnit) estão configurados em playwright.config.ts
         run: |
-          npx playwright test --reporter=html --reporter=junit=results/junit.xml
-        # continua mesmo em caso de falha para garantir upload dos relatórios
-        continue-on-error: true
+          npx playwright test
 
       - name: Upload Playwright HTML report
         if: always()
@@ -64,4 +62,3 @@ jobs:
 # - Os artifacts poderão ser baixados na aba 'Actions' > executar workflow > 'Artifacts'.
 # - Não há etapa para gerar PDF; removi qualquer chamada a scripts .github/scripts/*.js.
 # - Caso precise executar em outra branch além de main, adicione a branch ao gatilho 'branches' acima.
-
