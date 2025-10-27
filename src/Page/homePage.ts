@@ -13,18 +13,17 @@ export class HomePage {
 
     constructor(page: Page) {
         this.page = page
-        this.inputUsername = page.locator("#Email")
-        this.inputPassword = page.locator("#Password")
-        this.btnLogin = page.locator(".buttons button[type='submit']")
-        this.Computers = page.locator(".notmobile a[href=\"/computers\"]")
-        this.Desktops = page.locator(".notmobile  a[href=\"/desktops\"]")
+        this.inputUsername = page.locator("#user-name")
+        this.inputPassword = page.locator("#password")
+        this.btnLogin = page.locator("#login-button")
+
 
 
     }
 
-    async goToNopCommerce(): Promise<void> {
+    async goToSwagLabs(): Promise<void> {
 
-        await this.page.goto("https://demo.nopcommerce.com/login?returnUrl=%2F")
+        await this.page.goto("https://www.saucedemo.com/")
 
     }
 
@@ -35,11 +34,7 @@ export class HomePage {
 
 
     }
-    async comprarDesktop(): Promise<void> {
-        await this.Computers.click()
-        await this.Desktops.click()
 
-    }
 
 
 }

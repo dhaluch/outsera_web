@@ -6,14 +6,25 @@ import {user} from "../Data/Users";
 
 test.describe("Comprando Eletronicos", () => {
     test.beforeEach(async ({homePage}) => {
-        await homePage.goToNopCommerce();
+        await homePage.goToSwagLabs()
 
     })
 
-    test("Comprando Desktop", async ({homePage, desktopsPage}): Promise<void> => {
+    test("Comprando Bolsa e Lanterna de Bicleta", async ({homePage, productsPage, carrinhoPage, checkoutPage}): Promise<void> => {
         await homePage.login(user.USER, user.PASSWORD);
-        await homePage.comprarDesktop();
-        await desktopsPage.selecionarDesktop("Build your own computer");
+        await productsPage.selecionarProduto("add-to-cart-sauce-labs-backpack")
+        await productsPage.clickIconeCarrinho()
+        await productsPage.validaProdutoAdicionado("remove-sauce-labs-backpack")
+        await carrinhoPage.clickCheckout()
+        await checkoutPage.preencheFormulario()
+        await checkoutPage.clickContinue()
+        await checkoutPage.validaPaginaCheckoutOverview("inventory-item-name", "Sauce Labs Backpack")
+
+
+
+
+
+
 
     })
 
