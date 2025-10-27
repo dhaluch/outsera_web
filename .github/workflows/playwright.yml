@@ -1,4 +1,3 @@
-contents:
 name: Playwright Tests
 
 on:
@@ -47,77 +46,26 @@ jobs:
         run: |
           npx playwright test --reporter=github --reporter=html --reporter=junit --workers=1
 
-      - name: Create scripts dir
+      - name: Ensure scripts dir
         run: mkdir -p .github/scripts
-
-      - name: Add sanitize+PDF script
-        run: |
-          cat > .github/scripts/sanitize-and-generate-pdf.js <<'EOF'
-          const { chromium } = require('playwright');
-          const fs = require('fs');
-          const path = require('path');
-
-          (async () => {
-            try {
-              const dir = path.resolve('playwright-report');
-              const input = path.join(dir, 'index.html');
-              if (!fs.existsSync(input)) {
-                console.error('No playwright-report/index.html found — skipping PDF generation.');
-                process.exit(0);
-              }
-
-              let html = fs.readFileSync(input, 'utf8');
-
-              // Basic sanitization: remove <script> blocks, iframes, object/embed and on* attributes
-              html = html.replace(/<script[\s\S]*?<\/script>/gi, '');
-              html = html.replace(/<iframe[\s\S]*?<\/iframe>/gi, '');
-              html = html.replace(/<object[\s\S]*?<\/object>/gi, '');
-              html = html.replace(/<embed[\s\S]*?<\/embed>/gi, '');
-              html = html.replace(/on[a-zA-Z]+\s*=\s*"[^"]*"/gi, '');
-              html = html.replace(/on[a-zA-Z]+\s*=\s*'[^']*'/gi, '');
-              // optional: remove inline event handlers without quotes (rare)
-              html = html.replace(/on[a-zA-Z]+\s*=\s*[^\s>]+/gi, '');
-
-              const sanitized = path.join(dir, 'sanitized-index.html');
-              fs.writeFileSync(sanitized, html, 'utf8');
-
-              const browser = await chromium.launch();
-              const page = await browser.newPage();
-              await page.goto('file://' + sanitized, { waitUntil: 'networkidle' });
-              const outPdf = path.join(dir, 'report.pdf');
-              await page.pdf({ path: outPdf, format: 'A4' });
-              await browser.close();
-
-              console.log('PDF report generated at', outPdf);
-            } catch (e) {
-              console.error('Failed to generate PDF report:', e);
-              process.exit(1);
-            }
-          })();
-          EOF
 
       - name: Generate sanitized PDF report
         if: always()
         run: node .github/scripts/sanitize-and-generate-pdf.js
 
-      - name: Zip PDF (optional, sometimes reduces AV false positives)
+      - name: Upload Playwright HTML report
         if: always()
-        run: |
-          if [ -f playwright-report/report.pdf ]; then
-            apt-get update && apt-get install -y zip >/dev/null
-            zip -j playwright-report/report.zip playwright-report/report.pdf
-          else
-            echo "No PDF to zip"
-          fi
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
 
       - name: Upload PDF report (safer to download)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report-pdf
-          path: |
-            playwright-report/report.pdf
-            playwright-report/report.zip
+          path: playwright-report/report.pdf
 
       - name: Upload test-results (JUnit / logs)
         if: always()
