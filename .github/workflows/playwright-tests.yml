@@ -18,21 +18,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Debug — presence of SAUCE_ env vars (no secret values)
-        run: |
-          if [ -n "${SAUCE_USER}" ]; then
-            echo "SAUCE_USER set: yes"
-          else
-            echo "SAUCE_USER set: no"
-          fi
-          if [ -n "${SAUCE_SENHA}" ]; then
-            echo "SAUCE_SENHA set: yes"
-          else
-            echo "SAUCE_SENHA set: no"
-          fi
-        shell: bash
-
+        
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
