@@ -5,8 +5,8 @@
 <testcase name="get started link" classname="example.spec.ts" time="4.311">
 </testcase>
 </testsuite>
-<testsuite name="Login.spec.ts" timestamp="2025-10-27T23:36:11.410Z" hostname="chromium" tests="1" failures="0" skipped="0" time="4.615" errors="0">
-<testcase name="Comprando Eletronicos › Comprando Bolsa e Lanterna de Bicleta" classname="Login.spec.ts" time="4.615">
+<testsuite name="Compra.spec.ts" timestamp="2025-10-27T23:36:11.410Z" hostname="chromium" tests="1" failures="0" skipped="0" time="4.615" errors="0">
+<testcase name="Comprando Eletronicos › Comprando Bolsa e Lanterna de Bicleta" classname="Compra.spec.ts" time="4.615">
 </testcase>
 </testsuite>
 </testsuites>
