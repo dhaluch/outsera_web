@@ -12,17 +12,14 @@ jobs:
   test:
     name: Run Playwright tests
     runs-on: ubuntu-latest
+    # Provide secrets as environment variables to the job (avoid collision with runner env vars)
+    env:
+      SAUCE_USER: ${{ secrets.SAUCE_USER }}
+      SAUCE_SENHA: ${{ secrets.SAUCE_SENHA }}
     timeout-minutes: 20
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Create .env from repository secrets
-        # Cria um arquivo .env na raiz do repositório no runner a partir de secrets configurados no GitHub
-        run: |
-          echo "USER=${{ secrets.USER }}" > .env
-          echo "SENHA=${{ secrets.SENHA }}" >> .env
-        shell: bash
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -55,4 +52,4 @@ jobs:
 # - Os artifacts poderão ser baixados na aba 'Actions' > executar workflow > 'Artifacts'.
 # - Não há etapa para gerar PDF; removi qualquer chamada a scripts .github/scripts/*.js.
 # - Caso precise executar em outra branch além de main, adicione a branch ao gatilho 'branches' acima.
-# - Adicione os secrets 'USER' e 'SENHA' nas Settings -> Secrets and variables -> Actions no repositório.
+# - Adicione os secrets 'SAUCE_USER' e 'SAUCE_SENHA' nas Settings -> Secrets and variables -> Actions no repositório.
