@@ -28,13 +28,21 @@ export class HomePage {
     }
 
     async login(username: string, password: string): Promise<void> {
-        await this.inputUsername.fill(username)
-        await this.inputPassword.fill(password)
-        await this.btnLogin.click()
+        // Wait for username input to be visible to avoid racing/focus issues
+        await this.inputUsername.waitFor({ state: 'visible', timeout: 5000 });
 
+        // Fill the inputs (use empty string fallback to avoid passing undefined)
+        await this.inputUsername.fill(username ?? '');
+        await this.inputPassword.fill(password ?? '');
+
+        // Click login and wait for the products page to appear (avoid race/timeouts)
+        await Promise.all([
+            this.page.waitForURL('**/inventory.html', { timeout: 5000 }).catch(() => null),
+            this.page.waitForSelector('.inventory_list', { state: 'visible', timeout: 5000 }).catch(() => null),
+            this.btnLogin.click()
+        ]);
 
     }
-
 
 
 }
