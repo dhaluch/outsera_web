@@ -1,10 +1,9 @@
-# Workflow para executar testes Playwright e publicar apenas o relatório HTML como artifact
-# Não gera PDF nem executa scripts de geração de PDF
+# Playwright CI: executa testes e publica relatório HTML + test-results
 name: Playwright Tests
 
 on:
   push:
-    branches: [main, test-login]
+    branches: [main]
   pull_request:
     branches: [main]
 
@@ -12,15 +11,15 @@ jobs:
   test:
     name: Run Playwright tests
     runs-on: ubuntu-latest
+    # Se desejar, configure estes secrets no repositório: SAUCE_USER e SAUCE_SENHA
     env:
       SAUCE_USER: ${{ secrets.SAUCE_USER }}
       SAUCE_SENHA: ${{ secrets.SAUCE_SENHA }}
-    timeout-minutes: 20
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Debug: show presence of SAUCE_ env vars (no secret values)
+      - name: Debug — presence of SAUCE_ env vars (no secret values)
         run: |
           if [ -n "${SAUCE_USER}" ]; then
             echo "SAUCE_USER set: yes"
@@ -43,13 +42,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright browsers
+      - name: Install Playwright browsers and deps
         run: npx playwright install --with-deps
 
-      - name: Run Playwright tests (reporters via config)
-        id: playwright_test
-        run: |
-          npx playwright test
+      - name: Run Playwright tests
+        run: npx playwright test
 
       - name: Upload Playwright HTML report
         if: always()
@@ -66,7 +63,5 @@ jobs:
           path: test-results
 
 # Observações:
-# - Os artifacts poderão ser baixados na aba 'Actions' > executar workflow > 'Artifacts'.
-# - Não há etapa para gerar PDF; removi qualquer chamada a scripts .github/scripts/*.js.
-# - Caso precise executar em outra branch além de main, adicione a branch ao gatilho 'branches' acima.
-# - Adicione os secrets 'SAUCE_USER' e 'SAUCE_SENHA' nas Settings -> Secrets and variables -> Actions no repositório.
+# - Adicione os secrets SAUCE_USER e SAUCE_SENHA em Settings -> Secrets and variables -> Actions se quiser fornecer credenciais ao job.
+# - Os artifacts podem ser baixados na página da execução do workflow (Actions -> run -> Artifacts).

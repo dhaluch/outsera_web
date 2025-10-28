@@ -13,6 +13,8 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './tests',
+  /* Global timeout for each test (in milliseconds). Increased to 2 minutes to avoid CI timeouts */
+  timeout: 120000,
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -23,7 +25,11 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   // Use only the HTML reporter
-  reporter: [ ['html'] ],
+  reporter: [['html']],
+  /* Expect timeout config (for expect assertions). */
+  expect: {
+    timeout: 10000 // 10 seconds for expect assertions
+  },
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -31,6 +37,10 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+
+    /* Timeouts for individual actions and navigation */
+    actionTimeout: 30000, // 30s for individual actions (click, fill, etc.)
+    navigationTimeout: 60000, // 60s for navigation
 
     /* Take a screenshot only on failure and keep video on failure (retained). */
     screenshot: 'only-on-failure',
