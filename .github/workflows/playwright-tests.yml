@@ -12,7 +12,6 @@ jobs:
   test:
     name: Run Playwright tests
     runs-on: ubuntu-latest
-    # Provide secrets as environment variables to the job (avoid collision with runner env vars)
     env:
       SAUCE_USER: ${{ secrets.SAUCE_USER }}
       SAUCE_SENHA: ${{ secrets.SAUCE_SENHA }}
@@ -23,14 +22,21 @@ jobs:
 
       - name: Debug: show presence of SAUCE_ env vars (no secret values)
         run: |
-          echo "SAUCE_USER set: ${SAUCE_USER:+yes}"
-          echo "SAUCE_SENHA set: ${SAUCE_SENHA:+yes}"
+          if [ -n "${SAUCE_USER}" ]; then
+            echo "SAUCE_USER set: yes"
+          else
+            echo "SAUCE_USER set: no"
+          fi
+          if [ -n "${SAUCE_SENHA}" ]; then
+            echo "SAUCE_SENHA set: yes"
+          else
+            echo "SAUCE_SENHA set: no"
+          fi
         shell: bash
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          # Versão do Node utilizada no projeto (ajuste se necessário)
           node-version: '18'
           cache: 'npm'
 
@@ -38,12 +44,10 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        # Instala navegadores e dependências necessárias
         run: npx playwright install --with-deps
 
       - name: Run Playwright tests (reporters via config)
         id: playwright_test
-        # Executa os testes; o reporter HTML está configurado em playwright.config.ts
         run: |
           npx playwright test
 
