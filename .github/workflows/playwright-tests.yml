@@ -50,6 +50,27 @@ jobs:
           name: test-results
           path: test-results
 
+      - name: Debug Allure results presence
+        if: always()
+        env:
+          ALLURE_HASH: ${{ hashFiles('allure-results/**') }}
+        run: |
+          echo "hashFiles(allure-results/**) => ${ALLURE_HASH}"
+          if [ -d allure-results ]; then
+            echo "Allure results directory exists. Listing top-level files:"
+            ls -la allure-results | sed -n '1,200p'
+          else
+            echo "Directory 'allure-results' does not exist."
+          fi
+
+      - name: Upload allure-results (raw) artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results
+          if-no-files-found: warn
+
       - name: Set up JDK (Zulu 17)
         if: always()
         uses: actions/setup-java@v4
@@ -57,27 +78,52 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Load test report history
-        uses: actions/checkout@v3
+      - name: Load test report history (gh-pages)
+        uses: actions/checkout@v4
         if: always()
         continue-on-error: true
         with:
-            ref: gh-pages
-            path: gh-pages
-      - name: Build test report
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Build test report (Allure)
+        if: ${{ hashFiles('allure-results/**') != '' }}
         uses: simple-elf/allure-report-action@v1.7
-        if: always()
         with:
-            gh_pages: gh-pages
-            allure_history: allure-history
-            allure_results: build/allure-results
-      - name: Publish test report
+          gh_pages: gh-pages
+          allure_history: allure-history
+          allure_results: allure-results
+
+      - name: Add .nojekyll to built report (optional)
+        if: ${{ hashFiles('allure-history/**') != '' }}
+        run: |
+          echo > allure-history/.nojekyll
+
+      - name: Upload built Allure report (allure-history)
+        if: ${{ hashFiles('allure-history/**') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-history
+          path: allure-history
+
+      - name: Publish test report to gh-pages
+        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && hashFiles('allure-history/**') != ''
         uses: peaceiris/actions-gh-pages@v3
-        if: always()
         with:
-            github_token: ${{ secrets.GITHUB_TOKEN }}
-            publish_branch: gh-pages
-            publish_dir: allure-history
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-history
 
+      - name: Add report URL to job summary
+        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && hashFiles('allure-history/**') != ''
+        env:
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
+        run: |
+          REPORT_URL="https://${OWNER}.github.io/${REPO}/"
+          echo "Allure Report URL: ${REPORT_URL}" 
+          echo "\n## Allure Report\n\n- ${REPORT_URL}\n" >> "$GITHUB_STEP_SUMMARY"
 
-
+# Observações:
+# - Placeholder removido. Agora diagnosticamos se existe 'allure-results' e fazemos upload dessa pasta como artifact, e também do 'allure-history' quando gerado.
+# - Construção/publicação só ocorrem quando há resultados e conteúdo no allure-history.

@@ -40,9 +40,9 @@ export default defineConfig({
           OS: process.platform,
         },
         // You can also configure attachments here
-        // screenshotOnFailure: true,
-        // videoOnFailure: true,
-        // traceOnFailure: true,
+        screenshotOnFailure: true,
+        videoOnFailure: true,
+        traceOnFailure: true,
       }],
   ],
   /* Expect timeout config (for expect assertions). */
