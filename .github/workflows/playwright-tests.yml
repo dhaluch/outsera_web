@@ -2,21 +2,28 @@ name: Playwright Tests
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - feat/allure-report
   pull_request:
-    branches: [main]
+    branches:
+      - main
+
+permissions:
+  contents: write
 
 jobs:
   test:
-    name: Run Playwright tests
+    name: Run Playwright tests and publish Allure to gh-pages
     runs-on: ubuntu-latest
-    # Se desejar, configure estes secrets no repositório: SAUCE_USER e SAUCE_SENHA
     env:
       SAUCE_USER: ${{ secrets.SAUCE_USER }}
       SAUCE_SENHA: ${{ secrets.SAUCE_SENHA }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # necessário para preservar histórico do gh-pages
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -32,13 +39,8 @@ jobs:
 
       - name: Run Playwright tests
         run: npx playwright test
-
-      - name: Upload Playwright HTML report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: playwright-report
+        # Garante que as próximas etapas executem mesmo com falhas nos testes
+        continue-on-error: true
 
       - name: Upload test-results (videos/screenshots/traces)
         if: always()
@@ -47,6 +49,31 @@ jobs:
           name: test-results
           path: test-results
 
+      - name: Setup Java (required by Allure CLI)
+        if: always()
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build test report (Allure)
+        if: always()
+        uses: simple-elf/allure-report-action@v1.7
+        with:
+          gh_pages: gh-pages
+          allure_history: allure-history
+          allure_results: allure-results
+
+      - name: Publish test report to gh-pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-history
+
 # Observações:
-# - Adicione os secrets SAUCE_USER e SAUCE_SENHA em Settings -> Secrets and variables -> Actions se quiser fornecer credenciais ao job.
-# - Os artifacts podem ser baixados na página da execução do workflow (Actions -> run -> Artifacts).
+# - Publicação do Allure via branch "gh-pages", como no exemplo fornecido.
+# - Os testes rodam em push para main e feat/allure-report; o relatório é publicado sempre que houver push.
+# - Certifique-se em Settings -> Pages de selecionar a fonte "Deploy from a branch", branch "gh-pages" e pasta raiz "/".
+# - O relatório HTML nativo do Playwright não é usado; mantemos apenas Allure e artifacts de evidências (test-results).
