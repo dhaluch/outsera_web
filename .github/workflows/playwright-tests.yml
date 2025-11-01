@@ -72,7 +72,7 @@ jobs:
           path: test-results
 
       - name: Upload GitHub Pages artifact (Allure report)
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v3
         with:
           path: allure-report
@@ -80,7 +80,7 @@ jobs:
   deploy:
     name: Deploy Allure report to GitHub Pages
     needs: test
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -91,8 +91,8 @@ jobs:
         uses: actions/deploy-pages@v4
 
 # Observações:
+# - A publicação do GitHub Pages está restrita ao branch main para respeitar as regras de proteção do ambiente.
+# - Os testes rodam em push para main e feat/allure-report; em feat/allure-report geramos e publicamos artifacts (allure-report e test-results), mas não publicamos no Pages.
 # - Adicione os secrets SAUCE_USER e SAUCE_SENHA em Settings -> Secrets and variables -> Actions se quiser fornecer credenciais ao job.
-# - O relatório do Playwright (HTML) foi removido; agora o pipeline gera e publica o Allure em GitHub Pages.
-# - Os artifacts "allure-report" (download opcional) e "test-results" continuarão disponíveis na execução do workflow.
+# - O relatório do Playwright (HTML) foi removido; agora o pipeline gera e (no main) publica o Allure em GitHub Pages.
 # - Para visualizar o relatório publicado, habilite GitHub Pages com "GitHub Actions" como fonte (Settings -> Pages).
-# - A publicação do GitHub Pages só ocorre em eventos de push (main e feat/allure-report); em pull requests, apenas os artifacts são gerados.
