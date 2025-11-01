@@ -25,7 +25,26 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   // Use only the HTML reporter
-  reporter: [['html']],
+  reporter: [
+      //['html'],
+      ['allure-playwright', {
+        detail: true,
+        outputFolder: 'allure-results',
+        suiteTitle: false,
+        categories: [
+          { name: 'Ignored', matchedStatuses: ['skipped'] },
+          { name: 'Broken', matchedStatuses: ['failed'] }
+        ],
+        environmentInfo: {
+          NODE_VERSION: process.version,
+          OS: process.platform,
+        },
+        // You can also configure attachments here
+        // screenshotOnFailure: true,
+        // videoOnFailure: true,
+        // traceOnFailure: true,
+      }],
+  ],
   /* Expect timeout config (for expect assertions). */
   expect: {
     timeout: 10000 // 10 seconds for expect assertions

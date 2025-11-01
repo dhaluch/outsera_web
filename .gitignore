@@ -147,3 +147,6 @@ vite.config.ts.timestamp-*
 
 # JetBrains IDEs
 .idea/
+#allure-report
+allure-report/
+allure-results/
