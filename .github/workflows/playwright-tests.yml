@@ -63,15 +63,16 @@ jobs:
           if [ ! -d "allure-results" ] || [ -z "$(ls -A allure-results 2>/dev/null)" ]; then
             echo "No allure-results found. Creating placeholder report..."
             mkdir -p allure-history
-            cat > allure-history/index.html << 'EOF'
-            <html>
-              <head><meta charset="utf-8"><title>Allure Report</title></head>
-              <body>
-                <h2>No Allure results found</h2>
-                <p>Os testes foram executados, porém não há resultados para gerar o relatório Allure nesta execução.</p>
-              </body>
-            </html>
-            EOF
+            printf '%s\n' \
+              '<!doctype html>' \
+              '<html>' \
+              '<head><meta charset="utf-8"><title>Allure Report</title></head>' \
+              '<body>' \
+              '<h2>No Allure results found</h2>' \
+              '<p>Os testes foram executados, porém não há resultados para gerar o relatório Allure nesta execução.</p>' \
+              '</body>' \
+              '</html>' \
+              > allure-history/index.html
             echo "NO_RESULTS=true" >> $GITHUB_ENV
           fi
 
@@ -83,16 +84,28 @@ jobs:
           allure_history: allure-history
           allure_results: allure-results
 
-      - name: Publish test report to gh-pages
+      - name: Ensure Pages compatibility (.nojekyll and index)
         if: always()
+        run: |
+          mkdir -p allure-history
+          # evita processamento do Jekyll
+          echo > allure-history/.nojekyll
+          # garante um index.html
+          if [ ! -f allure-history/index.html ]; then
+            printf '%s\n' '<!doctype html><html><body><h2>Allure report not found</h2></body></html>' > allure-history/index.html
+          fi
+
+      - name: Publish test report to gh-pages
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: allure-history
+          force_orphan: true
 
       - name: Add report URL to job summary
-        if: always()
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         env:
           OWNER: ${{ github.repository_owner }}
           REPO: ${{ github.event.repository.name }}
