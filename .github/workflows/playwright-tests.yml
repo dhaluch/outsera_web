@@ -2,13 +2,27 @@ name: Playwright Tests
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - feat/allure-report
   pull_request:
-    branches: [main]
+    branches:
+      - main
+
+# Required permissions for GitHub Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Ensure only one Pages deployment runs at a time
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
 jobs:
   test:
-    name: Run Playwright tests
+    name: Run Playwright tests and build Allure report
     runs-on: ubuntu-latest
     # Se desejar, configure estes secrets no repositório: SAUCE_USER e SAUCE_SENHA
     env:
@@ -33,12 +47,22 @@ jobs:
       - name: Run Playwright tests
         run: npx playwright test
 
-      - name: Upload Playwright HTML report
+      - name: Generate Allure report (always)
+        if: always()
+        run: |
+          if [ -d ./allure-results ] && [ "$(ls -A ./allure-results || true)" ]; then
+            npx allure generate ./allure-results --clean -o ./allure-report
+          else
+            mkdir -p ./allure-report
+            echo '<html><body><h2>No Allure results found</h2><p>No results were produced by Playwright (possibly all tests were skipped or run failed early).</p></body></html>' > ./allure-report/index.html
+          fi
+
+      - name: Upload Allure report artifact (optional download)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
-          path: playwright-report
+          name: allure-report
+          path: allure-report
 
       - name: Upload test-results (videos/screenshots/traces)
         if: always()
@@ -47,6 +71,28 @@ jobs:
           name: test-results
           path: test-results
 
+      - name: Upload GitHub Pages artifact (Allure report)
+        if: github.event_name == 'push'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: allure-report
+
+  deploy:
+    name: Deploy Allure report to GitHub Pages
+    needs: test
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
 # Observações:
 # - Adicione os secrets SAUCE_USER e SAUCE_SENHA em Settings -> Secrets and variables -> Actions se quiser fornecer credenciais ao job.
-# - Os artifacts podem ser baixados na página da execução do workflow (Actions -> run -> Artifacts).
+# - O relatório do Playwright (HTML) foi removido; agora o pipeline gera e publica o Allure em GitHub Pages.
+# - Os artifacts "allure-report" (download opcional) e "test-results" continuarão disponíveis na execução do workflow.
+# - Para visualizar o relatório publicado, habilite GitHub Pages com "GitHub Actions" como fonte (Settings -> Pages).
+# - A publicação do GitHub Pages só ocorre em eventos de push (main e feat/allure-report); em pull requests, apenas os artifacts são gerados.
