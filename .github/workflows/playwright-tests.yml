@@ -1,6 +1,7 @@
 name: Playwright Tests
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -49,31 +50,77 @@ jobs:
           name: test-results
           path: test-results
 
-      - name: Setup Java (required by Allure CLI)
+      - name: Debug Allure results presence
+        if: always()
+        env:
+          ALLURE_HASH: ${{ hashFiles('allure-results/**') }}
+        run: |
+          echo "hashFiles(allure-results/**) => ${ALLURE_HASH}"
+          if [ -d allure-results ]; then
+            echo "Allure results directory exists. Listing top-level files:"
+            ls -la allure-results | sed -n '1,200p'
+          else
+            echo "Directory 'allure-results' does not exist."
+          fi
+
+      - name: Upload allure-results (raw) artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results
+          if-no-files-found: warn
+
+      - name: Set up JDK (Zulu 17)
         if: always()
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: 'zulu'
           java-version: '17'
 
-      - name: Build test report (Allure)
+      - name: Load test report history (gh-pages)
+        uses: actions/checkout@v4
         if: always()
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Build test report (Allure)
+        if: ${{ hashFiles('allure-results/**') != '' }}
         uses: simple-elf/allure-report-action@v1.7
         with:
           gh_pages: gh-pages
           allure_history: allure-history
           allure_results: allure-results
 
+      - name: Upload built Allure report (allure-history)
+        if: ${{ hashFiles('allure-history/**') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-history
+          path: allure-history
+
       - name: Publish test report to gh-pages
-        if: always()
+        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && hashFiles('allure-history/**') != ''
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: allure-history
+          enable_jekyll: false
+
+      - name: Add report URL to job summary
+        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && hashFiles('allure-history/**') != ''
+        env:
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
+        run: |
+          REPORT_URL="https://${OWNER}.github.io/${REPO}/"
+          echo "Allure Report URL: ${REPORT_URL}" 
+          echo "\n## Allure Report\n\n- ${REPORT_URL}\n" >> "$GITHUB_STEP_SUMMARY"
 
 # Observações:
-# - Publicação do Allure via branch "gh-pages", como no exemplo fornecido.
-# - Os testes rodam em push para main e feat/allure-report; o relatório é publicado sempre que houver push.
-# - Certifique-se em Settings -> Pages de selecionar a fonte "Deploy from a branch", branch "gh-pages" e pasta raiz "/".
-# - O relatório HTML nativo do Playwright não é usado; mantemos apenas Allure e artifacts de evidências (test-results).
+# - Removido o passo que criava manualmente o .nojekyll (causava Permission denied). O gh-pages agora desativa o Jekyll via enable_jekyll: false.
+# - Construção/publicação só ocorrem quando há resultados e conteúdo no allure-history.
+# - Artifacts allure-results e allure-history são enviados para facilitar depuração se o site ficar em branco.
