@@ -50,72 +50,34 @@ jobs:
           name: test-results
           path: test-results
 
-      - name: Setup Java (required by Allure CLI)
+      - name: Set up JDK (Zulu 17)
         if: always()
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: 'zulu'
           java-version: '17'
 
-      - name: Prepare placeholder report when no results
+      - name: Load test report history
+        uses: actions/checkout@v3
         if: always()
-        run: |
-          if [ ! -d "allure-results" ] || [ -z "$(ls -A allure-results 2>/dev/null)" ]; then
-            echo "No allure-results found. Creating placeholder report..."
-            mkdir -p allure-history
-            printf '%s\n' \
-              '<!doctype html>' \
-              '<html>' \
-              '<head><meta charset="utf-8"><title>Allure Report</title></head>' \
-              '<body>' \
-              '<h2>No Allure results found</h2>' \
-              '<p>Os testes foram executados, porém não há resultados para gerar o relatório Allure nesta execução.</p>' \
-              '</body>' \
-              '</html>' \
-              > allure-history/index.html
-            echo "NO_RESULTS=true" >> $GITHUB_ENV
-          fi
-
-      - name: Build test report (Allure)
-        if: ${{ env.NO_RESULTS != 'true' }}
+        continue-on-error: true
+        with:
+            ref: gh-pages
+            path: gh-pages
+      - name: Build test report
         uses: simple-elf/allure-report-action@v1.7
-        with:
-          gh_pages: gh-pages
-          allure_history: allure-history
-          allure_results: allure-results
-
-      - name: Ensure Pages compatibility (.nojekyll and index)
         if: always()
-        run: |
-          mkdir -p allure-history
-          # evita processamento do Jekyll
-          echo > allure-history/.nojekyll
-          # garante um index.html
-          if [ ! -f allure-history/index.html ]; then
-            printf '%s\n' '<!doctype html><html><body><h2>Allure report not found</h2></body></html>' > allure-history/index.html
-          fi
-
-      - name: Publish test report to gh-pages
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-        uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: allure-history
-          force_orphan: true
+            gh_pages: gh-pages
+            allure_history: allure-history
+            allure_results: build/allure-results
+      - name: Publish test report
+        uses: peaceiris/actions-gh-pages@v3
+        if: always()
+        with:
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            publish_branch: gh-pages
+            publish_dir: allure-history
 
-      - name: Add report URL to job summary
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-        env:
-          OWNER: ${{ github.repository_owner }}
-          REPO: ${{ github.event.repository.name }}
-        run: |
-          REPORT_URL="https://${OWNER}.github.io/${REPO}/"
-          echo "Allure Report URL: ${REPORT_URL}" 
-          echo "\n## Allure Report\n\n- ${REPORT_URL}\n" >> "$GITHUB_STEP_SUMMARY"
 
-# Observações:
-# - Publicação do Allure via branch "gh-pages". Na primeira execução, se não houver allure-results, publicaremos um placeholder para criar a branch.
-# - Depois de a branch gh-pages existir, vá em Settings -> Pages e selecione "Deploy from a branch", branch "gh-pages" e pasta raiz "/".
-# - Os testes rodam em push para main e feat/allure-report; o relatório é publicado sempre que houver push, ou manualmente via "Run workflow".
-# - O relatório HTML nativo do Playwright não é usado; mantemos apenas Allure e artifacts de evidências (test-results).
+
