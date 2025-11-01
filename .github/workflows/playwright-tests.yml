@@ -94,11 +94,6 @@ jobs:
           allure_history: allure-history
           allure_results: allure-results
 
-      - name: Add .nojekyll to built report (optional)
-        if: ${{ hashFiles('allure-history/**') != '' }}
-        run: |
-          echo > allure-history/.nojekyll
-
       - name: Upload built Allure report (allure-history)
         if: ${{ hashFiles('allure-history/**') != '' }}
         uses: actions/upload-artifact@v4
@@ -113,6 +108,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: allure-history
+          enable_jekyll: false
 
       - name: Add report URL to job summary
         if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && hashFiles('allure-history/**') != ''
@@ -125,5 +121,6 @@ jobs:
           echo "\n## Allure Report\n\n- ${REPORT_URL}\n" >> "$GITHUB_STEP_SUMMARY"
 
 # Observações:
-# - Placeholder removido. Agora diagnosticamos se existe 'allure-results' e fazemos upload dessa pasta como artifact, e também do 'allure-history' quando gerado.
+# - Removido o passo que criava manualmente o .nojekyll (causava Permission denied). O gh-pages agora desativa o Jekyll via enable_jekyll: false.
 # - Construção/publicação só ocorrem quando há resultados e conteúdo no allure-history.
+# - Artifacts allure-results e allure-history são enviados para facilitar depuração se o site ficar em branco.
