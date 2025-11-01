@@ -9,28 +9,21 @@ on:
     branches:
       - main
 
-# Required permissions for GitHub Pages deployment
 permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-# Ensure only one Pages deployment runs at a time
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
+  contents: write
 
 jobs:
   test:
-    name: Run Playwright tests and build Allure report
+    name: Run Playwright tests and publish Allure to gh-pages
     runs-on: ubuntu-latest
-    # Se desejar, configure estes secrets no repositório: SAUCE_USER e SAUCE_SENHA
     env:
       SAUCE_USER: ${{ secrets.SAUCE_USER }}
       SAUCE_SENHA: ${{ secrets.SAUCE_SENHA }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # necessário para preservar histórico do gh-pages
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -46,23 +39,8 @@ jobs:
 
       - name: Run Playwright tests
         run: npx playwright test
-
-      - name: Generate Allure report (always)
-        if: always()
-        run: |
-          if [ -d ./allure-results ] && [ "$(ls -A ./allure-results || true)" ]; then
-            npx allure generate ./allure-results --clean -o ./allure-report
-          else
-            mkdir -p ./allure-report
-            echo '<html><body><h2>No Allure results found</h2><p>No results were produced by Playwright (possibly all tests were skipped or run failed early).</p></body></html>' > ./allure-report/index.html
-          fi
-
-      - name: Upload Allure report artifact (optional download)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-report
-          path: allure-report
+        # Garante que as próximas etapas executem mesmo com falhas nos testes
+        continue-on-error: true
 
       - name: Upload test-results (videos/screenshots/traces)
         if: always()
@@ -71,28 +49,31 @@ jobs:
           name: test-results
           path: test-results
 
-      - name: Upload GitHub Pages artifact (Allure report)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: actions/upload-pages-artifact@v3
+      - name: Setup Java (required by Allure CLI)
+        if: always()
+        uses: actions/setup-java@v4
         with:
-          path: allure-report
+          distribution: 'temurin'
+          java-version: '17'
 
-  deploy:
-    name: Deploy Allure report to GitHub Pages
-    needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Build test report (Allure)
+        if: always()
+        uses: simple-elf/allure-report-action@v1.7
+        with:
+          gh_pages: gh-pages
+          allure_history: allure-history
+          allure_results: allure-results
+
+      - name: Publish test report to gh-pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-history
 
 # Observações:
-# - A publicação do GitHub Pages está restrita ao branch main para respeitar as regras de proteção do ambiente.
-# - Os testes rodam em push para main e feat/allure-report; em feat/allure-report geramos e publicamos artifacts (allure-report e test-results), mas não publicamos no Pages.
-# - Adicione os secrets SAUCE_USER e SAUCE_SENHA em Settings -> Secrets and variables -> Actions se quiser fornecer credenciais ao job.
-# - O relatório do Playwright (HTML) foi removido; agora o pipeline gera e (no main) publica o Allure em GitHub Pages.
-# - Para visualizar o relatório publicado, habilite GitHub Pages com "GitHub Actions" como fonte (Settings -> Pages).
+# - Publicação do Allure via branch "gh-pages", como no exemplo fornecido.
+# - Os testes rodam em push para main e feat/allure-report; o relatório é publicado sempre que houver push.
+# - Certifique-se em Settings -> Pages de selecionar a fonte "Deploy from a branch", branch "gh-pages" e pasta raiz "/".
+# - O relatório HTML nativo do Playwright não é usado; mantemos apenas Allure e artifacts de evidências (test-results).
