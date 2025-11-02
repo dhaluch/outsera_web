@@ -1,0 +1,53 @@
+name: Playwright tests and publish report
+
+on:
+  push:
+    branches: [ main, master, feature/** ]
+  pull_request:
+
+permissions:
+  contents: write
+  pages: write
+
+jobs:
+  test-and-deploy:
+    runs-on: ubuntu-latest
+    # Provide Sauce credentials from repository Secrets so tests can run in CI
+    env:
+      SAUCE_USER: ${{ secrets.SAUCE_USER }}
+      SAUCE_SENHA: ${{ secrets.SAUCE_SENHA }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Check credentials presence (masked)
+        run: |
+          echo "Has SAUCE_USER? $( [ -n \"$SAUCE_USER\" ] && echo yes || echo no )"
+          echo "Has SAUCE_SENHA? $( [ -n \"$SAUCE_SENHA\" ] && echo yes || echo no )"
+
+      - name: Run Playwright tests (generate HTML report)
+        run: npx playwright test --reporter=html
+
+      - name: Publish Playwright HTML report to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          # Use a repo-level PAT if provided as secret GH_PAGES_TOKEN, otherwise fall back to the default GITHUB_TOKEN
+          github_token: ${{ secrets.GH_PAGES_TOKEN || secrets.GITHUB_TOKEN }}
+          publish_dir: ./playwright-report
+          publish_branch: gh-pages
+          # Optionally set a custom commit message
+          commit_message: "Deploy Playwright report: ${{ github.sha }}"
