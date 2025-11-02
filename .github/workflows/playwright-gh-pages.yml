@@ -1,0 +1,41 @@
+name: Playwright tests and publish report
+
+on:
+  push:
+    branches: [ main, master, feature/** ]
+  pull_request:
+
+permissions:
+  contents: read
+  pages: write
+
+jobs:
+  test-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests (generate HTML report)
+        run: npx playwright test --reporter=html
+
+      - name: Publish Playwright HTML report to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./playwright-report
+          publish_branch: gh-pages
+          # Optionally set a custom commit message
+          commit_message: "Deploy Playwright report: ${{ github.sha }}"
+
