@@ -16,8 +16,8 @@
     "@faker-js/faker": "^9.9.0",
     "@playwright/test": "^1.56.1",
     "@types/node": "^24.9.2",
-    "dotenv": "^17.2.3",
+    "allure-commandline": "^2.13.9",
     "allure-playwright": "^2.0.0",
-    "allure-commandline": "^2.13.9"
+    "dotenv": "^17.2.3"
   }
 }
