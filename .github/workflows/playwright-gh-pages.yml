@@ -39,15 +39,18 @@ jobs:
           echo "Has SAUCE_USER? $( [ -n \"$SAUCE_USER\" ] && echo yes || echo no )"
           echo "Has SAUCE_SENHA? $( [ -n \"$SAUCE_SENHA\" ] && echo yes || echo no )"
 
-      - name: Run Playwright tests (generate HTML report)
-        run: npx playwright test --reporter=html
+      - name: Run Playwright tests (produce Allure results)
+        run: npx playwright test
 
-      - name: Publish Playwright HTML report to gh-pages
+      - name: Generate Allure HTML report
+        run: npx allure generate allure-results --clean -o allure-report
+
+      - name: Publish Allure HTML report to gh-pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           # Use a repo-level PAT if provided as secret GH_PAGES_TOKEN, otherwise fall back to the default GITHUB_TOKEN
           github_token: ${{ secrets.GH_PAGES_TOKEN || secrets.GITHUB_TOKEN }}
-          publish_dir: ./playwright-report
+          publish_dir: ./allure-report
           publish_branch: gh-pages
           # Optionally set a custom commit message
-          commit_message: "Deploy Playwright report: ${{ github.sha }}"
+          commit_message: "Deploy Allure report: ${{ github.sha }}"

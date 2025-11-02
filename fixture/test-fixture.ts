@@ -27,3 +27,4 @@ export const test = baseTest.extend<Pages>({
 
 });
 
+// Removed manual afterEach attachment to let allure-playwright attach artifacts automatically

@@ -22,7 +22,8 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
+  // Use Allure reporter to emit `allure-results`; keep a lightweight console reporter for local debugging
+  reporter: [["allure-playwright", { outputFolder: 'allure-results' }], ["list"]],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
@@ -30,6 +31,12 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+
+    // Always take screenshots and record videos for every test run
+    // screenshot: 'on' will capture a screenshot after every page action checkpoint;
+    // video: 'on' will record a video for each test (stored under the Playwright artifacts folder).
+    screenshot: 'on',
+    video: 'on',
   },
 
   /* Configure projects for major browsers */
