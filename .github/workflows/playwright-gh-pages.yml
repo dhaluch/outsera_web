@@ -12,6 +12,10 @@ permissions:
 jobs:
   test-and-deploy:
     runs-on: ubuntu-latest
+    # Provide Sauce credentials from repository Secrets so tests can run in CI
+    env:
+      SAUCE_USER: ${{ secrets.SAUCE_USER }}
+      SAUCE_SENHA: ${{ secrets.SAUCE_SENHA }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,6 +30,11 @@ jobs:
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
+
+      - name: Check credentials presence (masked)
+        run: |
+          echo "Has SAUCE_USER? $( [ -n \"$SAUCE_USER\" ] && echo yes || echo no )"
+          echo "Has SAUCE_SENHA? $( [ -n \"$SAUCE_SENHA\" ] && echo yes || echo no )"
 
       - name: Run Playwright tests (generate HTML report)
         run: npx playwright test --reporter=html
