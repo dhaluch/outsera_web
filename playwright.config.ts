@@ -30,7 +30,7 @@ export default defineConfig({
       {
         outputFolder: 'allure-results',
         detail: true,
-        suiteTitle: false,
+        suiteTitle: true,
         categories: [
           {
             name: "Failed tests",
