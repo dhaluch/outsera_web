@@ -8,7 +8,7 @@ import {allure} from "allure-playwright";
 test.describe("Validações de Login.", () => {
 
     test.beforeEach(async ({homePage}) => {
-        allure.label('suite', 'Login');
+        allure.parentSuite('Login');
         await homePage.goToSwagLabs()
 
     })

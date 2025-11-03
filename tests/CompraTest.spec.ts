@@ -5,7 +5,7 @@ import {allure} from "allure-playwright";
 test.describe("Fluxo de compras", () => {
 
     test.beforeEach(async ({homePage}) => {
-        allure.label('suite', 'Compras');
+        allure.parentSuite('Compras');
         await homePage.goToSwagLabs()
 
     })
