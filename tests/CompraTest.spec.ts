@@ -1,17 +1,18 @@
 import {test} from "../fixture/test-fixture";
-import {expect} from "@playwright/test";
 import {user} from "../Data/Users";
+import {allure} from "allure-playwright";
 
+test.describe("Fluxo de compras", () => {
 
-
-test.describe("Comprando Eletronicos", () => {
     test.beforeEach(async ({homePage}) => {
+        allure.suite("Compras");
         await homePage.goToSwagLabs()
 
     })
 
-    test("Comprando Bolsa e Lanterna de Bicleta", async ({homePage, productsPage, carrinhoPage, checkoutPage}): Promise<void> => {
+    test("Comprando Bolsa", async ({homePage, productsPage, carrinhoPage, checkoutPage}): Promise<void> => {
         // Verificação das credenciais para falha rápida e logs úteis no CI
+
         const hasUser = !!user.USER;
         const hasPassword = !!user.PASSWORD;
         console.log(`Credentials present? user: ${hasUser ? 'yes' : 'no'}, password: ${hasPassword ? 'yes' : 'no'}`);
