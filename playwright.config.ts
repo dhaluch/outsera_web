@@ -23,7 +23,8 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   // Use Allure reporter to emit `allure-results`; keep a lightweight console reporter for local debugging
-  reporter: [["allure-playwright", { detaill:true,outputFolder: 'allure-results', suiteTitle:false }], ["list",]],
+  // Configure Allure reporter: emit results to `allure-results` and enable suiteTitle
+  reporter: [["allure-playwright", { outputFolder: 'allure-results', suiteTitle: true }], ["list"]],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
@@ -32,9 +33,12 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
 
-    // Always take screenshots and record videos for every test run
-    // screenshot: 'on' will capture a screenshot after every page action checkpoint;
-    // video: 'on' will record a video for each test (stored under the Playwright artifacts folder).
+    // Video and screenshot capture strategy:
+    // - to avoid duplicated attachments in Allure when tests also attach artifacts manually,
+    //   capture artifacts only for failed tests. This is a non-invasive, report-only change.
+    // screenshot: 'on',
+    // video: 'on',
+    // Keep screenshots and videos always-on to avoid changing test artifact behavior
     screenshot: 'on',
     video: 'on',
   },
