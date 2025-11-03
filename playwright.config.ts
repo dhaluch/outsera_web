@@ -24,7 +24,27 @@ export default defineConfig({
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   // Use Allure reporter to emit `allure-results`; keep a lightweight console reporter for local debugging
   // Configure Allure reporter: disable suiteTitle to allow manual allure.suite() calls in tests to work correctly
-  reporter: [["allure-playwright", { outputFolder: 'allure-results', suiteTitle: false }], ["list"]],
+  reporter: [
+    [
+      "allure-playwright",
+      {
+        outputFolder: 'allure-results',
+        detail: true,
+        suiteTitle: false,
+        categories: [
+          {
+            name: "Failed tests",
+            matchedStatuses: ["failed"]
+          }
+        ],
+        environmentInfo: {
+          framework: "playwright",
+          node_version: process.version
+        }
+      }
+    ],
+    ["list"]
+  ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */

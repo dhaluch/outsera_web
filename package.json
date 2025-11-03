@@ -17,7 +17,7 @@
     "@playwright/test": "^1.56.1",
     "@types/node": "^24.9.2",
     "dotenv": "^17.2.3",
-    "allure-playwright": "^2.0.0",
-    "allure-commandline": "^2.13.9"
+    "allure-playwright": "^3.0.0",
+    "allure-commandline": "^2.30.0"
   }
 }
