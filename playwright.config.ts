@@ -23,8 +23,8 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   // Use Allure reporter to emit `allure-results`; keep a lightweight console reporter for local debugging
-  // Configure Allure reporter: emit results to `allure-results` and enable suiteTitle
-  reporter: [["allure-playwright", { outputFolder: 'allure-results', suiteTitle: true }], ["list"]],
+  // Configure Allure reporter: disable suiteTitle to allow manual allure.suite() calls in tests to work correctly
+  reporter: [["allure-playwright", { outputFolder: 'allure-results', suiteTitle: false }], ["list"]],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
