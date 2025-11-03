@@ -43,7 +43,13 @@ jobs:
         run: npx playwright test
 
       - name: Generate Allure HTML report
-        run: npx allure generate allure-results --clean -o allure-report
+        run: |
+          # Remove old report if exists to ensure clean generation
+          rm -rf allure-report
+          # Generate report without --clean to preserve all data files
+          npx allure generate allure-results -o allure-report
+          # Verify report was generated
+          ls -la allure-report/data
 
       - name: Publish Allure HTML report to gh-pages
         uses: peaceiris/actions-gh-pages@v3
