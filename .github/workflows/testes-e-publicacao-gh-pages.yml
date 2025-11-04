@@ -1,4 +1,4 @@
-name: Playwright tests and publish report
+name: Testes E2E SWAG LABS com Playwright e Publicação do Relatório Allure no GitHub Pages.
 
 on:
   push:
