@@ -31,12 +31,6 @@ export default defineConfig({
         outputFolder: 'allure-results',
         detail: true,
         suiteTitle: true,
-        categories: [
-          {
-            name: "Failed tests",
-            matchedStatuses: ["failed"]
-          }
-        ],
         environmentInfo: {
           framework: "playwright",
           node_version: process.version

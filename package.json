@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "playwright test",
-    "test:report": "playwright test && npx allure generate allure-results -o allure-report",
-    "allure:generate": "npx allure generate allure-results -o allure-report",
+    "test:report": "playwright test && npm run allure:generate",
+    "allure:generate": "copy categories.json allure-results\\categories.json & npx allure generate allure-results -o allure-report --clean",
     "allure:open": "npx allure open allure-report"
   },
   "keywords": [],
