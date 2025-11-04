@@ -23,7 +23,9 @@ test.describe("Validações de Login.", () => {
         }
 
         await homePage.login(user.USER as string, user.PASSWORD as string);
-        await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html');
+        await expect(page,
+            'Após login bem-sucedido com credenciais válidas, o usuário deveria ser redirecionado para a página de produtos (inventory.html). Verifique se as credenciais SAUCE_USER e SAUCE_SENHA estão corretas.'
+        ).toHaveURL('https://www.saucedemo.com/inventory.html');
 
 
 
@@ -36,12 +38,15 @@ test.describe("Validações de Login.", () => {
     test("Login  Usuario não cadastrado.", async ({homePage, page}): Promise<void> => {
         // Verificação das credenciais para falha rápida e logs úteis no CI
         await homePage.login(faker.internet.username(), faker.internet.password());
-        await expect(page.locator('[data-test="error"]')).toHaveText('Epic sadface: Username and password do not match any user in this service')
-
+        await expect(page.locator('[data-test="error"]'),
+            'Ao tentar fazer login com credenciais inválidas (usuário não cadastrado), deveria exibir mensagem de erro indicando que as credenciais não correspondem a nenhum usuário no sistema.'
+        ).toHaveText('Epic sadface: Username and password do not match any user in this service')
     })
     test("Login  Sem preencher Usuario.", async ({homePage, page}): Promise<void> => {
         await homePage.login(" ", faker.internet.password());
-        await expect(page.locator('[data-test="error"]')).toHaveText('Epic sadface: Username and password do not match any user in this service')
+        await expect(page.locator('[data-test="error"]'),
+            'Ao tentar fazer login sem preencher o campo de usuário (campo vazio ou com espaço), deveria exibir mensagem de erro indicando que as credenciais não correspondem.'
+        ).toHaveText('Epic sadface: Username and password do not match any user in this service')
 
 
 
@@ -52,7 +57,9 @@ test.describe("Validações de Login.", () => {
     })
     test("Login  Sem preencher Password", async ({homePage, page}): Promise<void> => {
         await homePage.login(faker.internet.username()," ");
-        await expect(page.locator('[data-test="error"]')).toHaveText('Epic sadface: Username and password do not match any user in this service')
+        await expect(page.locator('[data-test="error"]'),
+            'Ao tentar fazer login sem preencher o campo de senha (campo vazio ou com espaço), deveria exibir mensagem de erro indicando que as credenciais não correspondem.'
+        ).toHaveText('Epic sadface: Username and password do not match any user in this service')
 
 
 
@@ -63,7 +70,9 @@ test.describe("Validações de Login.", () => {
     })
     test("Login  Sem preencher Usuario e Password.", async ({homePage, page}): Promise<void> => {
         await homePage.login(" ", " ");
-        await expect(page.locator('[data-test="error"]')).toHaveText('Epic sadface: Username and password do not match any user in this service')
+        await expect(page.locator('[data-test="error"]'),
+            'Ao tentar fazer login sem preencher nenhum campo (usuário e senha vazios), deveria exibir mensagem de erro indicando que as credenciais não correspondem.'
+        ).toHaveText('Epic sadface: Username and password do not match any user in this service')
 
 
 
