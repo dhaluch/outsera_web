@@ -7,12 +7,17 @@ export class CheckoutPage {
     private readonly lastName: Locator;
     private readonly postalCode: Locator;
     private readonly btnContinue: Locator;
+    private readonly btnFinish: Locator;
+    private readonly btnCancelar: Locator;
     constructor(page: Page) {
         this.page = page
         this.firstName = page.locator("#first-name")
         this.lastName = page.locator("#last-name")
         this.postalCode = page.locator("#postal-code")
         this.btnContinue = page.locator("input[name='continue']")
+        this.btnFinish = page.locator("#finish")
+        this.btnCancelar = page.locator("button[name='cancel']")
+
     }
     async preencheFormulario(): Promise<void> {
         await this.firstName.fill("Teste")
@@ -28,4 +33,11 @@ export class CheckoutPage {
         await expect(locator).toHaveText(produtoComprado)
 
     }
+    async clickFinish(): Promise<void> {
+        await  this.btnFinish.click()
+    }
+    async clickCancelar(): Promise<void> {
+        await  this.btnCancelar.click()
+    }
+
 }
