@@ -29,7 +29,9 @@ test.describe("Fluxo de compras", () => {
         await checkoutPage.clickContinue()
         await checkoutPage.validaPaginaCheckoutOverview("inventory-item-name", "Sauce Labs Backpack")
         await checkoutPage.clickFinish();
-        await expect(page.locator('[data-test="complete-header"]')).toHaveText('Thank you for your order!')
+        await expect(page.locator('[data-test="complete-header"]'),
+            'A mensagem de confirmação do pedido deveria ser exibida após finalizar a compra. Verifique se o botão "Finish" foi clicado corretamente.'
+        ).toHaveText('Thank you for your order!')
 
     })
     test("Iniciando a compra Bike light e cancelando", async ({homePage, productsPage, carrinhoPage, checkoutPage, page}): Promise<void> => {
@@ -42,7 +44,9 @@ test.describe("Fluxo de compras", () => {
         await checkoutPage.preencheFormulario()
         await checkoutPage.clickContinue()
         await checkoutPage.clickCancelar()
-        await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html')
+        await expect(page,
+            'Após cancelar o checkout, o usuário deveria retornar à página de produtos (inventory). URL esperada: https://www.saucedemo.com/inventory.html'
+        ).toHaveURL('https://www.saucedemo.com/inventory.html')
 
     })
     test("Validacao campos obrigatorio formulario de checkout.", async ({homePage, productsPage, carrinhoPage, checkoutPage, page}): Promise<void> => {
@@ -53,7 +57,9 @@ test.describe("Fluxo de compras", () => {
         await productsPage.validaProdutoAdicionado("remove-sauce-labs-bike-light")
         await carrinhoPage.clickCheckout()
         await checkoutPage.clickContinue()
-        await expect(page.locator('[data-test="error"]')).toHaveText('Error: First Name is required')
+        await expect(page.locator('[data-test="error"]'),
+            'Ao tentar continuar o checkout sem preencher os campos obrigatórios, deveria exibir mensagem de erro indicando que "First Name is required"'
+        ).toHaveText('Error: First Name is required')
 
     })
 
