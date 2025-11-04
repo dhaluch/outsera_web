@@ -1,4 +1,4 @@
-name: Playwright tests and publish report
+name: Testes E2E SWAG LABS com Playwright e Publicação do Relatório Allure no GitHub Pages.
 
 on:
   push:
@@ -42,8 +42,36 @@ jobs:
       - name: Run Playwright tests (produce Allure results)
         run: npx playwright test
 
+      - name: Copy categories to allure-results
+        run: cp categories.json allure-results/categories.json
+
+      - name: Download previous Allure history from gh-pages
+        continue-on-error: true
+        run: |
+          # Download the previous report to extract history
+          mkdir -p allure-history
+          git fetch origin gh-pages
+          git checkout origin/gh-pages -- allure-report/history || echo "No previous history found"
+          if [ -d "allure-report/history" ]; then
+            cp -r allure-report/history/* allure-history/
+          fi
+
+      - name: Copy history to allure-results
+        continue-on-error: true
+        run: |
+          if [ -d "allure-history" ]; then
+            cp -r allure-history allure-results/history
+          fi
+
       - name: Generate Allure HTML report
-        run: npx allure generate allure-results --clean -o allure-report
+        run: |
+          # Remove old report if exists to ensure clean generation
+          rm -rf allure-report
+          # Generate report without --clean to preserve all data files
+          npx allure generate allure-results -o allure-report
+          # Verify report was generated
+          ls -la allure-report/data
+          ls -la allure-report/history || echo "No history yet"
 
       - name: Publish Allure HTML report to gh-pages
         uses: peaceiris/actions-gh-pages@v3

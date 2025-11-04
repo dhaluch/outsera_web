@@ -4,6 +4,8 @@ import {ProductsPage} from "../src/Page/ProductsPage";
 import {CarrinhoPage} from "../src/Page/CarrinhoPage";
 import {CheckoutPage} from "../src/Page/CheckoutPage";
 
+
+// Definindo a interface Pages para tipar as páginas do teste, facilitando o acesso a elas nos testes  sem a necessidade de importações repetidas..
 export interface Pages{
     homePage: HomePage;
     productsPage: ProductsPage;

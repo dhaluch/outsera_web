@@ -1,0 +1,29 @@
+[
+  {
+    "name": "Ignored tests",
+    "matchedStatuses": ["skipped"]
+  },
+  {
+    "name": "Timeout errors",
+    "matchedStatuses": ["broken", "failed"],
+    "messageRegex": ".*TimeoutError.*"
+  },
+  {
+    "name": "Login failures",
+    "matchedStatuses": ["failed"],
+    "messageRegex": ".*(Username and password do not match|login).*"
+  },
+  {
+    "name": "Infrastructure problems",
+    "matchedStatuses": ["broken", "failed"],
+    "messageRegex": ".*(network|connection|ECONNREFUSED).*"
+  },
+  {
+    "name": "Product defects",
+    "matchedStatuses": ["failed"]
+  },
+  {
+    "name": "Test defects",
+    "matchedStatuses": ["broken"]
+  }
+]

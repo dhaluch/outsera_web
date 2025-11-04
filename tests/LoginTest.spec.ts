@@ -2,11 +2,13 @@ import {test} from "../fixture/test-fixture";
 import {expect} from "@playwright/test";
 import {user} from "../Data/Users";
 import { faker } from '@faker-js/faker/locale/en';
-
+import {allure} from "allure-playwright";
 
 
 test.describe("Validações de Login.", () => {
+
     test.beforeEach(async ({homePage}) => {
+        allure.parentSuite('Login');
         await homePage.goToSwagLabs()
 
     })

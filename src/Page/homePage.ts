@@ -1,6 +1,6 @@
 import {expect, Locator, Page} from "@playwright/test";
 
-
+//Classe responsável pela página inicial, com os seletores e métodos necessários..
 export class HomePage {
     private readonly page: Page
     private readonly inputUsername: Locator
